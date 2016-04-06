@@ -1,0 +1,10 @@
+*.log
+venv/
+Thumbs.db
+*.pyc
+*.pyo
+tmp
+*.swp
+build
+.DS_Store
+sqlite
