@@ -1,0 +1,20 @@
+/* Move down content because we have a fixed navbar that is 50px tall */
+body {
+  padding-top: 50px;
+  padding-bottom: 20px;
+}
+
+.jumbotron {
+    padding-top: 48px;
+    padding-bottom: 48px;
+    background: linear-gradient(45deg,rgb(0, 25, 39) 0,#238392 100%);
+}
+
+.lbanner h1,
+.lbanner h2{
+    color: rgba(255, 255, 255, 0.53);
+}
+
+.lbanner p{
+    color: rgba(255, 255, 255, 0.53);
+}
