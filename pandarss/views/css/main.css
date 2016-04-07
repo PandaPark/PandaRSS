@@ -18,3 +18,7 @@ body {
 .lbanner p{
     color: rgba(255, 255, 255, 0.53);
 }
+
+footer {
+    margin-top: 100px;
+}

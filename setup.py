@@ -24,14 +24,14 @@ setup(name='pandarss',
        ],
       packages=find_packages(),
       package_data=package_data,
-      keywords=['radius', 'AAA','authentication','accounting','authorization','toughradius','self-service ','pandarss'],
+      keywords=['radius','toughradius','self-service ','pandarss'],
       zip_safe=True,
       include_package_data=True,
       eager_resources=['pandarss'],
       install_requires=install_requires,
       entry_points={
           'console_scripts': [
-              'pandarss = pandarss.main:run'
+              'pandarss = pandarss.main:main'
           ]
       }
 )

@@ -1,0 +1,46 @@
+% include('header.html')
+% setdefault('policys',{0:u'预付费包月',1:u"预付费时长",2:u"买断包月",3:u"买断时长",4:u"预付费流量",5:u"买断流量",6:u"自由资费"})
+
+<!-- Main jumbotron for a primary marketing message or call to action -->
+<div class="jumbotron">
+  <div class="container lbanner">
+    <h2>套餐订购</h2>
+<!--         <p><a class="btn btn-primary btn-lg" href="#" role="button">Learn more &raquo;</a></p> -->
+  </div>
+</div>
+
+<div class="container">
+        
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>套餐名称</th>
+                <th>类型</th>
+                <th>价格</th>
+                <th>授权时长</th>
+                <th>授权流量</th>
+                <th>授权月数</th>
+                <th>速率(上行/下行)</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+              % for product in products:
+            <tr>
+                <td>{{product['product_name']}}</td>
+                <td>{{policys[product['product_policy']]}}</td>
+                <td>￥{{utils.fen2yuan(product['fee_price'])}}</td>
+                <td>{{utils.sec2hour(product['fee_times'])}} 小时</td>
+                <td>{{utils.kb2mb(product['fee_flows'])}}</td>
+                <td>{{product['fee_months']}}</td>
+                <td>{{utils.bps2mbps(product['input_max_limit'])}}Mbps/{{utils.bps2mbps(product['output_max_limit'])}}Mbps</td>
+                <td><a href="/product/order">订购</a></td>
+            </tr>
+            % end
+            </tbody>
+        </table>
+         
+  </div>
+
+
+% include('footer.html')
