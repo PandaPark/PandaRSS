@@ -1,4 +1,0 @@
-[console_scripts]
-pandarss_txrun = pandarss.txrun:txrun
-pandarss = pandarss.main:main
-

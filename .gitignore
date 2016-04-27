@@ -8,4 +8,4 @@ tmp
 build
 .DS_Store
 sqlite
-Makefile
+pandarss.egg-info
