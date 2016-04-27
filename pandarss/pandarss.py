@@ -5,142 +5,55 @@ import os
 import json
 import time
 import bottle
-import urllib  
-import urllib2  
 import logging
 import decimal
+import datetime
 import functools
 from hashlib import md5
 from bottle import (
     static_file,template, Bottle, run,abort,error,
     request, response,redirect
 )
+from utils import Utils,memcache
+from trapi import TrApi
+from alipay import AliPay,Settings
 
 logger = logging.getLogger('pandarss')
 
 app = Bottle()
+app.config['home_site'] = 'http://127.0.0.1'
 app.config['template_path'] = os.path.join(os.path.dirname(__file__),'views')  
 app.config['api_url'] = 'http://127.0.0.1:1816/api/v1'
 app.config['api_key'] = '0BOTrVO6WRtkRnKTmM52nKfQpvCGY8vD'
 app.config['session_secret'] = '3DQ5qhmYiB44Q1YIDLVyVUdEqFvgVKLW'
+app.config['alipay_ALIPAY_KEY'] = 'jrid02eptgfs52qwa522scxdzqoajmww'
+app.config['alipay_ALIPAY_PARTNER'] = '2088911666698352'
+app.config['alipay_ALIPAY_SELLER_EMAIL'] = 'payment@toughstruct.com'
+app.config['alipay_ALIPAY_RETURN_URL'] = '%s/payok'%app.config['home_site']
+app.config['alipay_ALIPAY_NOTIFY_URL'] = '%s/payok'%app.config['home_site']
+
 bottle.TEMPLATE_PATH.insert(0, app.config['template_path'])
+trapi = TrApi(app)
+alipay = AliPay(Settings(
+    ALIPAY_KEY = app.config['alipay_ALIPAY_KEY'],
+    ALIPAY_INPUT_CHARSET = 'utf-8',
+    # 合作身份者ID，以2088开头的16位纯数字
+    ALIPAY_PARTNER = app.config['alipay_ALIPAY_PARTNER'],
+    # 签约支付宝账号或卖家支付宝帐户
+    ALIPAY_SELLER_EMAIL = app.config['alipay_ALIPAY_SELLER_EMAIL'],
+    ALIPAY_SIGN_TYPE = 'MD5',
+    # 付完款后跳转的页面（同步通知） 要用 http://格式的完整路径，不允许加?id=123这类自定义参数
+    ALIPAY_RETURN_URL=app.config['alipay_ALIPAY_RETURN_URL'],
+    # 交易过程中服务器异步通知的页面 要用 http://格式的完整路径，不允许加?id=123这类自定义参数
+    ALIPAY_NOTIFY_URL=app.config['alipay_ALIPAY_NOTIFY_URL'],
+    ALIPAY_SHOW_URL='',
+    # 访问模式,根据自己的服务器是否支持ssl访问，若支持请选择https；若不支持请选择http
+    ALIPAY_TRANSPORT='https'
+))
 
-class Utils:
-    """ 工具模块类
-    """
-    @staticmethod
-    def fen2yuan(fen=0):
-        f = decimal.Decimal(fen or 0)
-        y = f / decimal.Decimal(100)
-        return str(y.quantize(decimal.Decimal('1.00')))
-
-    @staticmethod
-    def yuan2fen(yuan=0):
-        y = decimal.Decimal(yuan or 0)
-        f = y * decimal.Decimal(100)
-        return int(f.to_integral_value())
-
-    @staticmethod
-    def kb2mb(ik):
-        _kb = decimal.Decimal(ik or 0)
-        _mb = _kb / decimal.Decimal(1024)
-        return str(_mb.quantize(decimal.Decimal('1.00')))
-
-    @staticmethod
-    def sec2hour(sec=0):
-        _sec = decimal.Decimal(sec or 0)
-        _hor = _sec / decimal.Decimal(3600)
-        return str(_hor.quantize(decimal.Decimal('1.00')))
-
-    @staticmethod
-    def bps2mbps(bps):
-        _bps = decimal.Decimal(bps or 0)
-        _mbps = _bps / decimal.Decimal(1024*1024)
-        return str(_mbps.quantize(decimal.Decimal('1.00')))
-
-class MemCache:
-    ''' 内存缓存
-    '''
-    def __init__(self):
-        self.cache = {}
-
-    def set(self, key, obj, expire=0):
-        if obj in ("", None) or key in ("", None):
-            return None
-        objdict = dict(obj=obj,expire=expire,time=time.time())
-        self.cache[key] = objdict
-
-    def get(self, key):
-        if key in self.cache:
-            objdict = self.cache[key]
-            _time = time.time()
-            if objdict['expire'] == 0 or (_time - objdict['time']) < objdict['expire']:
-                return objdict['obj']
-            else:
-                del self.cache[key]
-                return None
-        else:
-            return None
-
-    def aget(self, key, fetchfunc, *args, **kwargs):
-        result = self.get(key)
-        if result:
-            return result
-        if fetchfunc:
-            expire = kwargs.pop('expire',600)
-            result = fetchfunc(*args,**kwargs)
-            if result:
-                self.set(key,result,expire=expire)
-            return result
-
-memcache = MemCache()
-
-class TrApi:
-    ''' toughradius v2 api 封装
-    '''
-    @staticmethod
-    def apirequest(apipath,**params):
-        try:
-            api_req = { k:v for k,v in params.iteritems() if k not in ('sign')}
-            api_req['nonce'] = str(time.time())
-            _args = [p.decode('utf-8') for p in api_req.values() if p is not None]
-            _args.sort()
-            _args.insert(0, app.config['api_key'])
-            api_req['sign'] = md5((''.join(_args)).encode('utf-8')).hexdigest().upper()
-            response = urllib2.urlopen(
-                urllib2.Request('{0}{1}'.format(app.config['api_url'],apipath),urllib.urlencode(api_req)))  
-            return json.loads(response.read())
-        except:
-            import traceback
-            traceback.print_exc()
-            return dict(code=99999,msg='unknow error')
-
-    @staticmethod
-    def customer_auth(account_number,password):
-        return TrApi.apirequest('/customer/auth',account_number=account_number,password=password)
-
-    @staticmethod
-    def customer_query(account_number):
-        return TrApi.apirequest('/customer/query',account_number=account_number)
-
-    @staticmethod
-    def update_password(account_number,password):
-        return TrApi.apirequest('/account/pw/update',account_number=account_number,password=password)
-
-    @staticmethod
-    def product_list():
-        return TrApi.apirequest('/product/query')
-
-    @staticmethod
-    def product_get(product_id):
-        products = []
-        apiresp = TrApi.apirequest('/product/query',product_id=str(product_id))
-        if apiresp['code'] == 0:
-            products = apiresp['products']
-        return products and products[0] or {}
-
-
-#### web application
+################################################################################
+# web appliocation
+################################################################################
 
 def get_cookie(name):
     return request.get_cookie(md5(name).hexdigest(),secret=app.config['session_secret'])
@@ -155,11 +68,8 @@ def chklogin(func):
     return warp
 
 def render(name,*args,**kwargs):
-    return template(name,*args,
-        account_number=get_cookie("username"),
-        utils=Utils,
-        **kwargs
-    ) 
+    kwargs.update(utils=Utils,account_number=get_cookie("username"))
+    return template(name,*args,**kwargs) 
 
 @app.error(400)
 def abort400(error):
@@ -174,7 +84,6 @@ def statc_img(filename):
 def static_css(filename):
     return static_file(filename, root='%s/css'%app.config['template_path'])
 
-
 @app.route('/js/<filename:path>')
 def static_js(filename):
     return static_file(filename, root='%s/js'%app.config['template_path'])
@@ -184,16 +93,18 @@ def static_js(filename):
 def do_login():
     username = request.params.get('username')
     password = request.params.get('password')
-    login_resp = TrApi.customer_auth(username,password)
+    login_resp = trapi.customer_auth(username,password)
     if login_resp['code'] > 0:
         return abort(400,login_resp['msg'])
     else:
         set_cookie('username',username)
+        set_cookie("customer_name",login_resp['customer_name'])
         redirect("/")
 
 @app.route('/logout')
 def do_logout():
     set_cookie('username','')
+    set_cookie("customer_name",'')
     request.cookies.clear()
     redirect("/")
 
@@ -214,10 +125,10 @@ def do_password():
     newpassword2 = request.params.get('newpassword2')
     if newpassword1 not in [newpassword2]:
         return abort(400,u"确认密码不匹配")
-    chkresp = TrApi.customer_auth(account_number,oldpassword)
+    chkresp = trapi.customer_auth(account_number,oldpassword)
     if chkresp['code']>1:
         return abort(400,u'旧密码校验失败:%s'%chkresp['msg'])
-    apiresp = TrApi.update_password(account_number,newpassword1)
+    apiresp = trapi.update_password(account_number,newpassword1)
     if apiresp['code'] > 0:
         return abort(400,apiresp['msg'])
     else:
@@ -225,9 +136,9 @@ def do_password():
 
 @app.route('/account',apply=chklogin)
 def account():
-    account_number = get_cookie('username')
-    apiresp = TrApi.customer_query(account_number)
-    get_product = lambda pid:memcache.aget('product_cache_%s'%pid,TrApi.product_get,pid,expire=600)
+    customer_name = get_cookie('customer_name')
+    apiresp = trapi.customer_query(customer_name)
+    get_product = lambda pid:memcache.aget('product_cache_%s'%pid,trapi.product_get,pid,expire=600)
     if apiresp['code'] > 0:
         return abort(400,apiresp['msg'])
     else:
@@ -236,14 +147,104 @@ def account():
             customer=apiresp['customer'],
             accounts=apiresp['accounts'])
 
-@app.route('/product',apply=chklogin)
+@app.route('/orders',apply=chklogin)
+def orders():
+    customer_name = get_cookie('customer_name')
+    apiresp = trapi.order_query(customer_name)
+    get_product = lambda pid:memcache.aget('product_cache_%s'%pid,trapi.product_get,pid,expire=600)
+    if apiresp['code'] > 0:
+        return abort(400,apiresp['msg'])
+    else:
+        return render('orders',get_product=get_product,orders=apiresp['orders'])
+
+
+################################################################################
+# customer order new
+################################################################################
+
+@app.route('/product/order')
+def new_order():
+    #payfunc(utils.gen_order_id(),product['product_name'],product['product_name'],utils.fen2yuan(product['fee_price']))
+    product_id = request.params.get('product_id')
+    product = trapi.product_get(product_id)
+    node_resp = trapi.node_list()
+    if node_resp['code'] > 0:
+        return abort(400,node_resp['msg'])
+    account = trapi.account_gen()
+    return render('order_form',product=product,nodes=node_resp['nodes'],account=account)
+
+
+@app.post('/product/corder')
+def confirm_order():
+    rundata = dict(
+        product_id = request.params.get('product_id'),
+        node_id = request.params.get('node_id'),
+        node = trapi.node_get(request.params.get('node_id')),
+        realname = request.params.get('realname'),
+        email = request.params.get('email'),
+        idcard = request.params.get('idcard'),
+        mobile = request.params.get('mobile'),
+        address = request.params.get('address'),
+        account_number = request.params.get('account_number'),
+        password = request.params.get('password'),
+        months = request.params.get('months'),
+        begin_date = datetime.datetime.now().strftime("%Y-%m-%d") 
+    )
+    product = trapi.product_get(rundata['product_id'])
+
+    if product['product_policy'] == 0:
+        order_fee = decimal.Decimal(product['fee_price']) * decimal.Decimal(rundata['months'])
+        order_fee = int(order_fee.to_integral_value())
+        rundata['fee_total'] =  Utils.fen2yuan(order_fee)
+        expire_date = Utils.add_months(datetime.datetime.now(),int(rundata['months']))
+        expire_date = expire_date.strftime( "%Y-%m-%d")
+        rundata['expire_date'] = expire_date
+    elif product['product_policy'] == 2:
+        rundata['fee_total'] = Utils.fen2yuan(product['fee_price'])
+        expire_date = Utils.add_months(datetime.datetime.now(),int(product['fee_months']))
+        expire_date = expire_date.strftime( "%Y-%m-%d")
+        rundata['expire_date'] = expire_date
+
+    return render('order_cform',product=product,rundata=rundata)
+
+@app.post('/product/order/alipay')
+def alipay_order():
+    addresp = trapi.customer_add(
+        request.params.get('account_number'), 
+        request.params.get('password'), 
+        request.params.get('product_id'), 
+        request.params.get('realname'), 
+        request.params.get('email'), 
+        request.params.get('node_id'), 
+        request.params.get('idcard'), 
+        request.params.get('mobile'), 
+        request.params.get('address'), 
+        request.params.get('begin_date'), 
+        request.params.get('expire_date'), 
+        request.params.get('fee_value'), '0',
+        balance='0.00',
+        time_length = '0',
+        flow_length = '0')
+    if addresp['code'] > 0:
+        return abort(400,addresp['msg'])
+    else:
+        order_id = addresp['order_id']
+        product = trapi.product_get(request.params.get('product_id'))
+        url = alipay.create_direct_pay_by_user(order_id, product['product_name'], product['product_name'], request.params.get('fee_value'))
+        redirect(url)
+
+@app.route('/product')
 def product():
-    apiresp = TrApi.product_list()
+    apiresp = trapi.product_list()
     if apiresp['code'] > 0:
         return abort(400,apiresp['msg'])
     else:
         products=(p for p in apiresp['products'] if p['product_policy'] not in [6])
-        return render('product',products=products)
+        return render('product',products=products,payfunc=alipay.create_direct_pay_by_user)
+
+################################################################################
+# application running
+################################################################################
 
 def load_config():
     _config1 = os.path.join(os.path.dirname(__file__),'pandarss.json')

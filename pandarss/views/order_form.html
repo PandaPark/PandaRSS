@@ -1,0 +1,98 @@
+% include('header.html')
+% setdefault('paystatus',{0:u"未支付",1:u"已支付",2:u"已取消"})
+
+<!-- Main jumbotron for a primary marketing message or call to action -->
+<div class="jumbotron">
+  <div class="container lbanner">
+    <h2>在线订购</h2>
+<!--         <p><a class="btn btn-primary btn-lg" href="#" role="button">Learn more &raquo;</a></p> -->
+  </div>
+</div>
+
+<div class="container">
+        
+<form class="form-horizontal form-well" role="form" action="/product/corder" method="post">
+    <div class="form-group">
+        <label class="col-sm-4 control-label" id="lab_node_id" for="node_id">区域</label>
+        <div class="col-sm-6">
+        <select required="required" placeholder="区域" class="form-control" name="node_id" id="node_id">
+        % for node in nodes:
+         <option value="{{node['id']}}">{{node['node_name']}}</option>
+        % end
+        </select>
+
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-4 control-label" id="lab_realname" for="realname">用户姓名</label>
+        <div class="col-sm-6">
+        <input name="realname" placeholder="用户姓名, 长度必须为2到32" required="required" id="realname" type="text" class="form-control"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-4 control-label" id="lab_email" for="email">用户Email</label>
+        <div class="col-sm-6">
+        <input name="email" placeholder="用户Email" required="required" id="email" type="text" class="form-control"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-4 control-label" id="lab_idcard" for="idcard">证件号码</label>
+        <div class="col-sm-6">
+        <input type="text" placeholder="证件号码, 长度必须为1到32" class="form-control" name="idcard" id="idcard"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-4 control-label" id="lab_mobile" for="mobile">用户手机号码</label>
+        <div class="col-sm-6">
+        <input type="text" placeholder="用户手机号码, 长度必须为1到32" class="form-control" name="mobile" id="mobile"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-4 control-label" id="lab_address" for="address">用户地址</label>
+        <div class="col-sm-6">
+        <input name="address" placeholder="用户地址, 长度必须为1到32" required="required" id="address" type="text" class="form-control"/>
+        </div>
+    </div>
+<hr/>
+    <div class="form-group">
+        <label class="col-sm-4 control-label" id="lab_account_number" for="account_number">用户账号</label>
+        <div class="col-sm-6">
+        <input name="account_number" value="{{account}}" readonly="readonly" id="account_number" type="text" class="form-control"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-4 control-label" id="lab_password" for="password">认证密码</label>
+        <div class="col-sm-6">
+        <input name="password" placeholder="认证密码" required="required" id="password" type="text" class="form-control"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-4 control-label" id="lab_product_id" for="product_id">资费</label>
+        <input type="hidden" name="product_id" required="required" id="product_id" value="{{product['id']}}"/>
+        <div class="col-sm-6">
+        <input name="product_name" value="{{product['product_name']}}" readonly="readonly" type="text" class="form-control"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-4 control-label" id="lab_months" for="months">月数(包月有效)</label>
+        <div class="col-sm-6">
+        % if product['product_policy'] == 0:
+        <input name="months" placeholder="月数(包月有效), 必须是数字" required="required" id="months" type="text" class="form-control"/>
+        % elif product['product_policy'] == 2:
+        <input name="months" placeholder="月数(包月有效), 必须是数字" readonly="readonly" id="months" type="text" class="form-control" value="{{product['fee_months']}}"/>
+        % end 
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-4 control-label" id="lab_submit" for="submit"></label>
+        <div class="col-sm-6">
+        <button name="submit" placeholder="submit" id="submit" type="submit" class="btn btn-primary"><b>下一步</b></button>
+        </div>
+    </div>
+
+</form>
+         
+</div>
+
+
+% include('footer.html')

@@ -34,7 +34,11 @@
                 <td>{{utils.kb2mb(product['fee_flows'])}}</td>
                 <td>{{product['fee_months']}}</td>
                 <td>{{utils.bps2mbps(product['input_max_limit'])}}Mbps/{{utils.bps2mbps(product['output_max_limit'])}}Mbps</td>
-                <td><a href="/product/order">订购</a></td>
+                <td>
+                    % if product['product_policy'] in (0,2):
+                    <a class="btn btn-sm btn-info" href="/product/order?product_id={{product['id']}}">订购</a>
+                    % end
+                </td>
             </tr>
             % end
             </tbody>
