@@ -3,15 +3,25 @@
 from setuptools import setup, find_packages
 import pandarss
 
-install_requires = []
-package_data={}
+install_requires = [
+    'Twisted>=15.0.0',
+    'bottle>=0.12.7'
+]
+
+package_data={
+  'pandarss': [
+        'views/css/*',
+        'views/js/*',
+        'views/*'
+    ]
+}
 
 
 setup(name='pandarss',
       version='0.1',
       author='pandaman',
       author_email='pandaman1999@foxmail.com',
-      url='https://coding.net/u/pandaman/p/PandaRSS/git',
+      url='https://github.com/PandaPark/PandaRSS',
       license='BSD',
       description='ToughRADIUS Self-service Portal',
       long_description=open('README.md').read(),
