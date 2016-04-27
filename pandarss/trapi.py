@@ -50,6 +50,10 @@ class TrApi:
             pay_status=pay_status,
             **kwargs)
 
+
+    def customer_payok(self,order_id):
+        return self.apirequest('/order/payok',order_id=order_id)
+
     def customer_query(self,customer_name):
         return self.apirequest('/customer/query',customer_name=customer_name)
 

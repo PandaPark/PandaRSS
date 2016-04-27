@@ -21,6 +21,7 @@ from alipay import AliPay,Settings
 logger = logging.getLogger('pandarss')
 
 app = Bottle()
+app.config['port']  = 8080
 app.config['home_site'] = 'http://127.0.0.1'
 app.config['template_path'] = os.path.join(os.path.dirname(__file__),'views')  
 app.config['api_url'] = 'http://127.0.0.1:1816/api/v1'
@@ -29,8 +30,8 @@ app.config['session_secret'] = '3DQ5qhmYiB44Q1YIDLVyVUdEqFvgVKLW'
 app.config['alipay_ALIPAY_KEY'] = 'jrid02eptgfs52qwa522scxdzqoajmww'
 app.config['alipay_ALIPAY_PARTNER'] = '2088911666698352'
 app.config['alipay_ALIPAY_SELLER_EMAIL'] = 'payment@toughstruct.com'
-app.config['alipay_ALIPAY_RETURN_URL'] = '%s/payok'%app.config['home_site']
-app.config['alipay_ALIPAY_NOTIFY_URL'] = '%s/payok'%app.config['home_site']
+app.config['alipay_ALIPAY_RETURN_URL'] = '%s/'%app.config['home_site']
+app.config['alipay_ALIPAY_NOTIFY_URL'] = '%s/product/order/verify'%app.config['home_site']
 
 bottle.TEMPLATE_PATH.insert(0, app.config['template_path'])
 trapi = TrApi(app)
@@ -233,6 +234,19 @@ def alipay_order():
         url = alipay.create_direct_pay_by_user(order_id, product['product_name'], product['product_name'], request.params.get('fee_value'))
         redirect(url)
 
+@app.post('/product/order/verify')
+def verify_order():
+    params = request.params
+    isok = alipay.notify_verify(params)
+    if isok:
+        apiresp = trapi.customer_payok(order_id=params.get('trade_no'))
+        if apiresp['code'] > 0:
+            return abort(400,apiresp['msg'])
+        redirect('/account')
+    else:
+        return abort(400,u"订单无效")
+
+
 @app.route('/product')
 def product():
     apiresp = trapi.product_list()
@@ -256,10 +270,16 @@ def load_config():
 
 def main():
     load_config()
-    run(app,host='localhost', port=8080, debug=True,reloader=False)
+    port = int(app.config['port'])
+    run(app,host='localhost', port=port, debug=True,reloader=False)
+
+def txrun():
+    load_config()
+    port = int(app.config['port'])
+    run(app,host='localhost', port=port, debug=True,reloader=False,server='twisted')
 
 if __name__ == '__main__':
-    main()
+    txrun()
 
 
 
