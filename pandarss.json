@@ -1,0 +1,11 @@
+{
+    "host": "0.0.0.0", 
+    "port": 8080,
+    "home_site":"http://127.0.0.1",
+    "api_url":"http://127.0.0.1:1816/api/v1",
+    "api_key":"",
+    "session_secret":"",
+    "alipay_ALIPAY_KEY":"",
+    "alipay_ALIPAY_PARTNER":"",
+    "alipay_ALIPAY_SELLER_EMAIL":""
+}
