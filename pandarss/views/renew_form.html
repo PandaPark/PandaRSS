@@ -1,0 +1,51 @@
+% include('header.html')
+% setdefault('paystatus',{0:u"未支付",1:u"已支付",2:u"已取消"})
+
+<!-- Main jumbotron for a primary marketing message or call to action -->
+<div class="jumbotron">
+  <div class="container lbanner">
+    <h2>在线订购</h2>
+<!--         <p><a class="btn btn-primary btn-lg" href="#" role="button">Learn more &raquo;</a></p> -->
+  </div>
+</div>
+
+<div class="container">
+        
+<form class="form-horizontal form-well" role="form" action="/account/crenew" method="post">
+
+    <div class="form-group">
+        <label class="col-sm-4 control-label" id="lab_account_number" for="account_number">用户账号</label>
+        <div class="col-sm-6">
+        <input name="account_number" value="{{account}}" readonly="readonly" id="account_number" type="text" class="form-control"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-4 control-label" id="lab_product_id" for="product_id">资费</label>
+        <input type="hidden" name="product_id" required="required" id="product_id" value="{{product['id']}}"/>
+        <div class="col-sm-6">
+        <input name="product_name" value="{{product['product_name']}}" readonly="readonly" type="text" class="form-control"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-4 control-label" id="lab_months" for="months">月数(包月有效)</label>
+        <div class="col-sm-6">
+        % if product['product_policy'] == 0:
+        <input name="months" placeholder="月数(包月有效), 必须是数字" required="required" id="months" type="text" class="form-control"/>
+        % elif product['product_policy'] == 2:
+        <input name="months" placeholder="月数(包月有效), 必须是数字" readonly="readonly" id="months" type="text" class="form-control" value="{{product['fee_months']}}"/>
+        % end 
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-4 control-label" id="lab_submit" for="submit"></label>
+        <div class="col-sm-6">
+        <button name="submit" placeholder="submit" id="submit" type="submit" class="btn btn-primary"><b>下一步</b></button>
+        </div>
+    </div>
+
+</form>
+         
+</div>
+
+
+% include('footer.html')

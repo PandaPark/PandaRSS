@@ -30,8 +30,9 @@ app.config['session_secret'] = '3DQ5qhmYiB44Q1YIDLVyVUdEqFvgVKLW'
 app.config['alipay_ALIPAY_KEY'] = 'jrid02eptgfs52qwa522scxdzqoajmww'
 app.config['alipay_ALIPAY_PARTNER'] = '2088911666698352'
 app.config['alipay_ALIPAY_SELLER_EMAIL'] = 'payment@toughstruct.com'
-app.config['alipay_ALIPAY_RETURN_URL'] = '%s/'%app.config['home_site']
-app.config['alipay_ALIPAY_NOTIFY_URL'] = '%s/product/order/verify'%app.config['home_site']
+app.config['alipay_ALIPAY_RETURN_URL'] = '%s/account'%app.config['home_site']
+app.config['alipay_ALIPAY_NOTIFY_URL'] = '%s/order/verify'%app.config['home_site']
+app.config['renew_orders'] = {}
 
 bottle.TEMPLATE_PATH.insert(0, app.config['template_path'])
 trapi = TrApi(app)
@@ -234,17 +235,90 @@ def alipay_order():
         url = alipay.create_direct_pay_by_user(order_id, product['product_name'], product['product_name'], request.params.get('fee_value'))
         redirect(url)
 
-@app.post('/product/order/verify')
+
+################################################################################
+# alipay order verify
+################################################################################
+@app.post('/order/verify')
 def verify_order():
     params = request.params
     isok = alipay.notify_verify(params)
     if isok:
-        apiresp = trapi.customer_payok(order_id=params.get('trade_no'))
-        if apiresp['code'] > 0:
-            return abort(400,apiresp['msg'])
-        redirect('/account')
+        renew_order = app.config['renew_orders'].get(params.get('trade_no'))
+        if renew_order:
+            apiresp = trapi.account_renew(params.get('trade_no'),renew_order['account_number'],
+                renew_order['expire_date'],renew_order['fee_value'])
+            if apiresp['code'] > 0:
+                return abort(400,apiresp['msg'])
+            else:
+                del app.config['renew_orders'][params.get('trade_no')]
+                return 'success'
+        else:
+            apiresp = trapi.customer_payok(order_id=params.get('trade_no'))
+            if apiresp['code'] > 0:
+                return abort(400,apiresp['msg'])
+        return 'success'
     else:
         return abort(400,u"订单无效")
+
+
+################################################################################
+# customer order new
+################################################################################
+
+@app.route('/account/renew',apply=chklogin)
+def account_renew():
+    product_id = request.params.get('product_id')
+    product = trapi.product_get(product_id)
+    account = customer_name = get_cookie('username')
+    return render('renew_form',product=product,account=account)
+
+
+@app.post('/account/crenew')
+def confirm_renew():
+    rundata = dict(
+        product_id = request.params.get('product_id'),
+        account_number = request.params.get('account_number'),
+        months = request.params.get('months')
+    )
+    product = trapi.product_get(rundata['product_id'])
+    aqresp = trapi.account_query(rundata['account_number'])
+    account = {}
+    if aqresp['code'] == 0:
+        account = aqresp['account']
+    else:
+        return abort(400,apiresp['msg'])
+
+    if product['product_policy'] == 0:
+        order_fee = decimal.Decimal(product['fee_price']) * decimal.Decimal(rundata['months'])
+        order_fee = int(order_fee.to_integral_value())
+        rundata['fee_total'] =  Utils.fen2yuan(order_fee)
+        start_expire = datetime.datetime.strptime(account['expire_date'],"%Y-%m-%d")
+        expire_date = Utils.add_months(start_expire,int(rundata['months']))
+        expire_date = expire_date.strftime( "%Y-%m-%d")
+        rundata['expire_date'] = expire_date
+    elif product['product_policy'] == 2:
+        rundata['fee_total'] = Utils.fen2yuan(product['fee_price'])
+        start_expire = datetime.datetime.strptime(account['expire_date'],"%Y-%m-%d")
+        expire_date = Utils.add_months(start_expire,int(product['fee_months']))
+        expire_date = expire_date.strftime( "%Y-%m-%d")
+        rundata['expire_date'] = expire_date
+
+    return render('renew_cform',product=product,rundata=rundata)
+
+@app.post('/account/renew/alipay')
+def alipay_renew():
+    order_id = Utils.gen_order_id()
+    product = trapi.product_get(request.params.get('product_id'))
+    order = {
+        'order_id' : order_id,
+        'account_number': request.params.get('account_number'),
+        'expire_date':request.params.get('expire_date'),
+        'fee_value':request.params.get('fee_value'),
+    }
+    app.config['renew_orders'][order_id] = order
+    url = alipay.create_direct_pay_by_user(order_id, product['product_name'], product['product_name'], request.params.get('fee_value'))
+    redirect(url)
 
 
 @app.route('/product')

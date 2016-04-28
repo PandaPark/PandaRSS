@@ -32,6 +32,17 @@ class TrApi:
     def customer_auth(self,account_number,password):
         return self.apirequest('/customer/auth',account_number=account_number,password=password)
 
+    def account_query(self,account_number):
+        return self.apirequest('/account/query',account_number=account_number)
+
+    def account_renew(self,order_id,account_number,expire_date,fee_value):
+        return self.apirequest('/account/renew',
+            order_id=order_id,
+            account_number=account_number,
+            expire_date=expire_date,
+            fee_value=fee_value
+        )
+
     def customer_add(self,account_number,password,product_id,
         realname,email,node_id,idcard,mobile,address,begin_date,expire_date,fee_value,pay_status,**kwargs):
         return self.apirequest('/customer/add',
