@@ -338,9 +338,9 @@ def load_config():
     _config1 = os.path.join(os.path.dirname(__file__),'pandarss.json')
     _config2 = '/etc/pandarss.json'
     if os.path.exists(_config2):
-        app.config.load_config(_config2)
+        app.config.load_config(json.loads(open(_config2).read()))
     elif os.path.exists(_config1):
-        app.config.load_config(_config1)
+        app.config.load_config(json.loads(open(_config1).read()))
 
 def main():
     load_config()
