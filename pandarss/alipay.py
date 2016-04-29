@@ -164,6 +164,7 @@ class AliPay:
         # params['receive_phone'] = request.get('receive_phone', '')
         # params['receive_mobile'] = request.get('receive_mobile', '')
 
+        self.logger.info(request)
         if not self.check_sign(**request):
             self.logger.error('check_sign failure')
             return False
