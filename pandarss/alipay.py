@@ -179,7 +179,7 @@ class AliPay:
         else:
             gateway = 'http://notify.alipay.com/trade/notify_query.do'
 
-        veryfy_result = urllib2.urlopen(urllib2.Request(gateway,urllib.urlencode(params))).read()
+        veryfy_result = urllib2.urlopen(urllib2.Request(gateway,urlencode(params))).read()
         self.logger.info('veryfy_result:%s'%veryfy_result)
         return veryfy_result.lower().strip() == 'true'
 
