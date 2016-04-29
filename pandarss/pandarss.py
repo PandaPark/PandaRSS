@@ -250,18 +250,18 @@ def verify_order():
     params = request.params
     isok = alipay.notify_verify(params)
     if isok:
-        renew_order = app.config['renew_orders'].get(params.get('trade_no'))
+        renew_order = app.config['renew_orders'].get(params.get('out_trade_no'))
         if renew_order:
-            apiresp = trapi.account_renew(params.get('trade_no'),renew_order['account_number'],
+            apiresp = trapi.account_renew(params.get('out_trade_no'),renew_order['account_number'],
                 renew_order['expire_date'],renew_order['fee_value'])
             if apiresp['code'] > 0:
                 logger.info(apiresp['msg'])
                 return abort(400,apiresp['msg'])
             else:
-                del app.config['renew_orders'][params.get('trade_no')]
+                del app.config['renew_orders'][params.get('out_trade_no')]
                 return 'success'
         else:
-            apiresp = trapi.customer_payok(order_id=params.get('trade_no'))
+            apiresp = trapi.customer_payok(order_id=params.get('out_trade_no'))
             if apiresp['code'] > 0:
                 logger.info(apiresp['msg'])
                 return abort(400,apiresp['msg'])
