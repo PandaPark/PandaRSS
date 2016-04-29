@@ -69,8 +69,8 @@ class TrApi:
     def customer_query(self,customer_name):
         return self.apirequest('/customer/query',customer_name=customer_name)
 
-    def order_query(self,customer_name):
-        return self.apirequest('/order/query',customer_name=customer_name)
+    def order_query(self,customer_name='',order_id=''):
+        return self.apirequest('/order/query',customer_name=customer_name,order_id=order_id)
 
     def update_password(self,account_number,password):
         return self.apirequest('/account/pw/update',account_number=account_number,password=password)

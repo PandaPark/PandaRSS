@@ -1,0 +1,55 @@
+% include('header.html')
+% setdefault('user_status',{0:u'预定',1:u"正常",2:u"停机",3:u"销户",4:u"到期"})
+% setdefault('sexs',{0:u'女',1:u'男'})
+
+    <div class="jumbotron">
+      <div class="container lbanner">
+        <h2>支付结果</h2>
+        <p></p>
+<!--         <p><a class="btn btn-primary btn-lg" href="#" role="button">Learn more &raquo;</a></p> -->
+      </div>
+    </div>
+
+    <div class="container">
+
+
+        <table class="table ">
+                <thead>
+                    <tr>
+                        <th colspan="6"> 支付宝支付结果</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>订单号</td>
+                        <td>{{params['out_trade_no']}}</td>
+                        <td>支付时间</td>
+                        <td>{{params['notify_time']}}</td>
+                        <td>支付状态</td>
+                        <td>{{params['trade_status']}}</td>                 
+                    </tr>
+                    <tr>
+                        <td>支付账号</td>
+                        <td>{{params['buyer_email']}}</td>
+                        <td>商品名称</td>
+                        <td>{{params['subject']}}</td>
+                        <td>交易金额</td>
+                        <td>{{params['total_fee']}}</td>
+                    </tr>     
+                    % if account:     
+                    <tr>
+                        <td>用户账号</td>
+                        <td>{{account}}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>   
+                    % end                                                                               
+            </tbody>
+        </table>
+        
+    </div>
+
+
+% include('footer.html')

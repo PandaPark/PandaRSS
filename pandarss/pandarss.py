@@ -271,6 +271,19 @@ def verify_order():
         return abort(400,u"订单无效")
 
 
+@app.post('/alipay/return')
+def alipay_return():
+    order_id = params.get('out_trade_no')
+    apiresp = trapi.order_query(order_id=order_id)
+    account = None
+    if apiresp['code'] > 0:
+        logger.info(apiresp['msg'])
+    else:
+        order = apiresp.get('order')
+        if order:
+            account = order.get("account_number")
+    return render('alipay_return',params=request.params,account=account)
+
 ################################################################################
 # customer order new
 ################################################################################
