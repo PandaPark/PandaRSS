@@ -19,10 +19,11 @@ class TrApi:
             api_req['nonce'] = str(time.time())
             _args = [p.decode('utf-8') for p in api_req.values() if p is not None]
             _args.sort()
-            _args.insert(0, self.app.config['api_key'])
+            _args.insert(0, self.app.config['system.api_key'])
             api_req['sign'] = md5((''.join(_args)).encode('utf-8')).hexdigest().upper()
-            response = urllib2.urlopen(
-                urllib2.Request('{0}{1}'.format(self.app.config['api_url'],apipath),urllib.urlencode(api_req)))  
+            _api_url = '{0}{1}'.format(self.app.config['system.api_url'],apipath)
+            print _api_url
+            response = urllib2.urlopen(urllib2.Request(_api_url,urllib.urlencode(api_req)))  
             return json.loads(response.read())
         except:
             import traceback

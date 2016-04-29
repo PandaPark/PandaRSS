@@ -21,36 +21,36 @@ from alipay import AliPay,Settings
 logger = logging.getLogger('pandarss')
 
 app = Bottle()
-app.config['port']  = 8080
-app.config['home_site'] = 'http://127.0.0.1'
-app.config['template_path'] = os.path.join(os.path.dirname(__file__),'views')  
-app.config['api_url'] = 'http://127.0.0.1:1816/api/v1'
-app.config['api_key'] = '0BOTrVO6WRtkRnKTmM52nKfQpvCGY8vD'
-app.config['session_secret'] = '3DQ5qhmYiB44Q1YIDLVyVUdEqFvgVKLW'
-app.config['alipay_ALIPAY_KEY'] = 'jrid02eptwercxdzqoajmww'
-app.config['alipay_ALIPAY_PARTNER'] = '208wer98352'
-app.config['alipay_ALIPAY_SELLER_EMAIL'] = 'demo@demo.com'
-app.config['alipay_ALIPAY_RETURN_URL'] = '%s/account'%app.config['home_site']
-app.config['alipay_ALIPAY_NOTIFY_URL'] = '%s/order/verify'%app.config['home_site']
+app.config['system.port']  = 8080
+app.config['system.template_path'] = os.path.join(os.path.dirname(__file__),'views')  
 app.config['renew_orders'] = {}
 
-bottle.TEMPLATE_PATH.insert(0, app.config['template_path'])
+_config1 = os.path.abspath(os.path.join(os.path.dirname(__file__),'pandarss.conf'))
+_config2 = '/etc/pandarss.conf'
+if os.path.exists(_config2):
+    print 'using config',_config2
+    app.config.load_config(_config2)
+elif os.path.exists(_config1):
+    print 'using config',_config1
+    app.config.load_config(_config1)
+
+bottle.TEMPLATE_PATH.insert(0, app.config['system.template_path'])
 trapi = TrApi(app)
 alipay = AliPay(Settings(
-    ALIPAY_KEY = app.config['alipay_ALIPAY_KEY'],
+    ALIPAY_KEY = app.config['alipay.alipay_key'],
     ALIPAY_INPUT_CHARSET = 'utf-8',
     # 合作身份者ID，以2088开头的16位纯数字
-    ALIPAY_PARTNER = app.config['alipay_ALIPAY_PARTNER'],
+    ALIPAY_PARTNER = app.config['alipay.alipay_partner'],
     # 签约支付宝账号或卖家支付宝帐户
-    ALIPAY_SELLER_EMAIL = app.config['alipay_ALIPAY_SELLER_EMAIL'],
+    ALIPAY_SELLER_EMAIL = app.config['alipay.alipay_seller_email'],
     ALIPAY_SIGN_TYPE = 'MD5',
     # 付完款后跳转的页面（同步通知） 要用 http://格式的完整路径，不允许加?id=123这类自定义参数
-    ALIPAY_RETURN_URL=app.config['alipay_ALIPAY_RETURN_URL'],
+    ALIPAY_RETURN_URL=app.config['alipay.alipay_return_url'],
     # 交易过程中服务器异步通知的页面 要用 http://格式的完整路径，不允许加?id=123这类自定义参数
-    ALIPAY_NOTIFY_URL=app.config['alipay_ALIPAY_NOTIFY_URL'],
+    ALIPAY_NOTIFY_URL=app.config['alipay.alipay_notify_url'],
     ALIPAY_SHOW_URL='',
     # 访问模式,根据自己的服务器是否支持ssl访问，若支持请选择https；若不支持请选择http
-    ALIPAY_TRANSPORT='https'
+    ALIPAY_TRANSPORT='http'
 ))
 
 ################################################################################
@@ -58,10 +58,10 @@ alipay = AliPay(Settings(
 ################################################################################
 
 def get_cookie(name):
-    return request.get_cookie(md5(name).hexdigest(),secret=app.config['session_secret'])
+    return request.get_cookie(md5(name).hexdigest(),secret=app.config['system.session_secret'])
         
 def set_cookie(name,value,**options):
-    response.set_cookie(md5(name).hexdigest(),value,secret=app.config['session_secret'],**options)
+    response.set_cookie(md5(name).hexdigest(),value,secret=app.config['system.session_secret'],**options)
 
 def chklogin(func):
     @functools.wraps(func)
@@ -79,16 +79,16 @@ def abort400(error):
 
 @app.route('/imgs/<filename:path>')
 def statc_img(filename):
-    return static_file(filename, root='%s/imgs'%app.config['template_path'])
+    return static_file(filename, root='%s/imgs'%app.config['system.template_path'])
 
 
 @app.route('/css/<filename:path>')
 def static_css(filename):
-    return static_file(filename, root='%s/css'%app.config['template_path'])
+    return static_file(filename, root='%s/css'%app.config['system.template_path'])
 
 @app.route('/js/<filename:path>')
 def static_js(filename):
-    return static_file(filename, root='%s/js'%app.config['template_path'])
+    return static_file(filename, root='%s/js'%app.config['system.template_path'])
 
 
 @app.post('/login')
@@ -334,23 +334,15 @@ def product():
 # application running
 ################################################################################
 
-def load_config():
-    _config1 = os.path.join(os.path.dirname(__file__),'pandarss.json')
-    _config2 = '/etc/pandarss.json'
-    if os.path.exists(_config2):
-        app.config.load_config(json.loads(open(_config2).read()))
-    elif os.path.exists(_config1):
-        app.config.load_config(json.loads(open(_config1).read()))
-    trapi.app = app
+
+
 
 def main():
-    load_config()
-    port = int(app.config['port'])
+    port = int(app.config['system.port'])
     run(app,host='localhost', port=port, debug=True,reloader=False)
 
 def txrun():
-    load_config()
-    port = int(app.config['port'])
+    port = int(app.config['system.port'])
     run(app,host='localhost', port=port, debug=True,reloader=False,server='twisted')
 
 if __name__ == '__main__':
