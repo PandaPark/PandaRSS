@@ -2,6 +2,7 @@
 #coding=utf-8
 
 import os
+import sys
 import json
 import time
 import bottle
@@ -18,7 +19,12 @@ from utils import Utils,memcache
 from trapi import TrApi
 from alipay import AliPay,Settings
 
+
 logger = logging.getLogger('pandarss')
+logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(logging.Formatter(u'%(asctime)s %(name)s %(levelname)-4s %(message)s','%b %d %H:%M:%S'))
+logger.addHandler(handler)
 
 app = Bottle()
 app.config['system.port']  = 8080
@@ -349,6 +355,7 @@ def txrun():
     run(app,host='localhost', port=port, debug=True,reloader=False,server='twisted')
 
 if __name__ == '__main__':
+    logger.debug("start pandarss")
     main()
 
 
