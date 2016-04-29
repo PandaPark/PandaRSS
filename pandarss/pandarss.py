@@ -273,7 +273,7 @@ def verify_order():
 
 @app.route('/alipay/return')
 def alipay_return():
-    order_id = params.get('out_trade_no')
+    order_id = request.params.get('out_trade_no')
     apiresp = trapi.order_query(order_id=order_id)
     account = None
     if apiresp['code'] > 0:
