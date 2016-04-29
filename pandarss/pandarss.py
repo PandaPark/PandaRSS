@@ -29,7 +29,6 @@ logger.addHandler(handler)
 app = Bottle()
 app.config['system.port']  = 8080
 app.config['system.template_path'] = os.path.join(os.path.dirname(__file__),'views')  
-app.config['renew_orders'] = {}
 
 _config1 = os.path.abspath(os.path.join(os.path.dirname(__file__),'pandarss.conf'))
 _config2 = '/etc/pandarss.conf'
@@ -250,16 +249,10 @@ def verify_order():
     params = request.params
     isok = alipay.notify_verify(params)
     if isok:
-        renew_order = app.config['renew_orders'].get(params.get('out_trade_no'))
-        if renew_order:
-            apiresp = trapi.account_renew(params.get('out_trade_no'),renew_order['account_number'],
-                renew_order['expire_date'],renew_order['fee_value'])
-            if apiresp['code'] > 0:
-                logger.info(apiresp['msg'])
-                return abort(400,apiresp['msg'])
-            else:
-                del app.config['renew_orders'][params.get('out_trade_no')]
-                return 'success'
+        apiresp = trapi.account_renew(params.get('out_trade_no'),renew_order['account_number'],
+            renew_order['expire_date'],renew_order['fee_value'],'1')
+        if apiresp['code'] == 0:
+            return 'success'
         else:
             apiresp = trapi.customer_payok(order_id=params.get('out_trade_no'))
             if apiresp['code'] > 0:
@@ -338,7 +331,9 @@ def alipay_renew():
         'expire_date':request.params.get('expire_date'),
         'fee_value':request.params.get('fee_value'),
     }
-    app.config['renew_orders'][order_id] = order
+    apiresp = trapi.account_renew(order['order_id'],order['account_number'],order['expire_date'],order['fee_value'],'0')
+    if apiresp['code'] > 0:
+        return abort(400,apiresp['msg'])
     url = alipay.create_direct_pay_by_user(order_id, product['product_name'], product['product_name'], request.params.get('fee_value'))
     redirect(url)
 
