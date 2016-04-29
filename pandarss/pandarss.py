@@ -56,8 +56,8 @@ alipay = AliPay(Settings(
     ALIPAY_NOTIFY_URL=app.config['alipay.alipay_notify_url'],
     ALIPAY_SHOW_URL='',
     # 访问模式,根据自己的服务器是否支持ssl访问，若支持请选择https；若不支持请选择http
-    ALIPAY_TRANSPORT='http'
-))
+    ALIPAY_TRANSPORT='https'
+),logger=logger)
 
 ################################################################################
 # web appliocation

@@ -29,8 +29,9 @@ class AliPay:
 
     GATEWAY = 'https://mapi.alipay.com/gateway.do?'
 
-    def __init__(self, settings={}):
+    def __init__(self, settings={},logger=None):
         self.settings = settings
+        self.logger = logger
 
     def event_alipay_setup(self,settings):
         self.settings = settings
@@ -164,6 +165,7 @@ class AliPay:
         params['receive_mobile'] = request.get('receive_mobile', '')
 
         if not self.check_sign(**params):
+            self.logger.error('check_sign failure')
             return False
         
         # 二级验证--查询支付宝服务器此条信息是否有效
@@ -177,6 +179,7 @@ class AliPay:
             gateway = 'http://notify.alipay.com/trade/notify_query.do'
 
         veryfy_result = urllib2.urlopen(urllib2.Request(gateway,urllib.urlencode(params))).read()
+        self.logger.info('veryfy_result:%s'%veryfy_result)
         return veryfy_result.lower().strip() == 'true'
 
 
