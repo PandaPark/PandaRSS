@@ -354,7 +354,7 @@ def txrun():
     run(app,host='localhost', port=port, debug=True,reloader=False,server='twisted')
 
 if __name__ == '__main__':
-    txrun()
+    main()
 
 
 
