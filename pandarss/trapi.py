@@ -36,7 +36,7 @@ class TrApi:
     def account_query(self,account_number):
         return self.apirequest('/account/query',account_number=account_number)
 
-    def account_renew(self,order_id,account_number,expire_date,fee_value,pay_status):
+    def account_renew(self,order_id,account_number=None,expire_date=None,fee_value=None,pay_status=None):
         return self.apirequest('/account/renew',
             order_id=order_id,
             account_number=account_number,

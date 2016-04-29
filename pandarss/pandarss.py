@@ -249,8 +249,7 @@ def verify_order():
     params = request.params
     isok = alipay.notify_verify(params)
     if isok:
-        apiresp = trapi.account_renew(params.get('out_trade_no'),renew_order['account_number'],
-            renew_order['expire_date'],renew_order['fee_value'],'1')
+        apiresp = trapi.account_renew(params.get('out_trade_no'),pay_status="1")
         if apiresp['code'] == 0:
             return 'success'
         else:
