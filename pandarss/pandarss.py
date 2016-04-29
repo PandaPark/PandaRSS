@@ -341,6 +341,7 @@ def load_config():
         app.config.load_config(json.loads(open(_config2).read()))
     elif os.path.exists(_config1):
         app.config.load_config(json.loads(open(_config1).read()))
+    trapi.app = app
 
 def main():
     load_config()
