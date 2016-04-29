@@ -65,6 +65,7 @@ class AliPay:
 
 
     def check_sign(self, **msg):
+        print msg
         if "sign" not in msg:
             return False
         params = {self.safestr(k):self.safestr(msg[k]) for k in msg if k in ('sign','sign_type')}
