@@ -41,8 +41,8 @@ setup(name='pandarss',
       install_requires=install_requires,
       entry_points={
           'console_scripts': [
-              'pandarss = pandarss.main:main',
-              'pandarss_txrun = pandarss.txrun:txrun',
+              'pandarss = pandarss.pandarss:main',
+              'pandarss_txrun = pandarss.pandarss:txrun',
           ]
       }
 )
