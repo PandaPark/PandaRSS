@@ -12,7 +12,7 @@ package_data={
   'pandarss': [
         'views/css/*',
         'views/js/*',
-        'views/*'
+        'views/*.html'
     ]
 }
 
