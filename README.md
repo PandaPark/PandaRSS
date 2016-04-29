@@ -61,7 +61,7 @@ PandaRSS 是一个基于 ToughRADIUS V2版本 API 的自助服务系统。
 
 修改 /etc/toughradius.conf, 加入以下内容
 
-    [program:manage]
+    [program:pandarss]
     command=pandarss_txrun
     startretries = 10
     autorestart = true
