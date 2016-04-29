@@ -65,11 +65,10 @@ class AliPay:
 
 
     def check_sign(self, **msg):
-        print msg
         if "sign" not in msg:
             return False
-        params = {self.safestr(k):self.safestr(msg[k]) for k in msg if k in ('sign','sign_type')}
-        local_sign = make_sign(params)
+        params = {self.safestr(k):self.safestr(msg[k]) for k in msg if k not in ('sign','sign_type')}
+        local_sign = self.make_sign(params)
         return msg['sign'] == local_sign
 
 
@@ -129,7 +128,7 @@ class AliPay:
         params['notify_type'] = request.get('notify_type', '')
         params['notify_time'] = request.get('notify_time', '')
         params['sign'] = request.get('sign', '')
-        params['sign_type'] = request.get('sign_type', '')
+        params['sign_type'] = request.get('sign_type', 'MD5')
 
         params['trade_no'] = request.get('trade_no', '')
         params['subject'] = request.get('subject', '')
@@ -164,7 +163,7 @@ class AliPay:
         params['receive_phone'] = request.get('receive_phone', '')
         params['receive_mobile'] = request.get('receive_mobile', '')
 
-        if not self.check_sign(request.get('sign', '')):
+        if not self.check_sign(**params):
             return False
         
         # 二级验证--查询支付宝服务器此条信息是否有效
