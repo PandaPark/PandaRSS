@@ -271,7 +271,7 @@ def verify_order():
         return abort(400,u"订单无效")
 
 
-@app.post('/alipay/return')
+@app.route('/alipay/return')
 def alipay_return():
     order_id = params.get('out_trade_no')
     apiresp = trapi.order_query(order_id=order_id)
