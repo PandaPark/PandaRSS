@@ -249,6 +249,7 @@ def verify_order():
             apiresp = trapi.account_renew(params.get('trade_no'),renew_order['account_number'],
                 renew_order['expire_date'],renew_order['fee_value'])
             if apiresp['code'] > 0:
+                logger.info(apiresp['msg'])
                 return abort(400,apiresp['msg'])
             else:
                 del app.config['renew_orders'][params.get('trade_no')]
@@ -256,9 +257,11 @@ def verify_order():
         else:
             apiresp = trapi.customer_payok(order_id=params.get('trade_no'))
             if apiresp['code'] > 0:
+                logger.info(apiresp['msg'])
                 return abort(400,apiresp['msg'])
         return 'success'
     else:
+        logger.info(u"订单无效")
         return abort(400,u"订单无效")
 
 
