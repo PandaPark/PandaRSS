@@ -290,12 +290,14 @@ def product():
 
 
 def main():
+    host = app.config['system.host']
     port = int(app.config['system.port'])
-    run(app,host='localhost', port=port, debug=True,reloader=False)
+    run(app,host=host, port=port, debug=True,reloader=False)
 
 def txrun():
+    host = app.config['system.host']
     port = int(app.config['system.port'])
-    run(app,host='localhost', port=port, debug=True,reloader=False,server='twisted')
+    run(app,host=host, port=port, debug=True,reloader=False,server='twisted')
 
 if __name__ == '__main__':
     logger.debug("start pandarss")
