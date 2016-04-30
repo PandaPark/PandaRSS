@@ -145,7 +145,7 @@ def do_password():
 def account():
     customer_name = get_cookie('customer_name')
     apiresp = trapi.customer_query(customer_name)
-    get_product = lambda pid:memcache.aget('product_cache_%s'%pid,trapi.product_get,pid,expire=600)
+    get_product = lambda pid:memcache.aget('product_cache_%s'%pid,trapi.product_get,pid,expire=600) or {}
     if apiresp['code'] > 0:
         return abort(400,apiresp['msg'])
     else:
