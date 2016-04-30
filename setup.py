@@ -18,7 +18,7 @@ package_data={
 
 
 setup(name='pandarss',
-      version='0.1',
+      version='0.2',
       author='pandaman',
       author_email='pandaman1999@foxmail.com',
       url='https://github.com/PandaPark/PandaRSS',
