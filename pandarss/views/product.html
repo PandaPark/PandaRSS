@@ -35,7 +35,7 @@
                 <td>{{product['fee_months']}}</td>
                 <td>{{utils.bps2mbps(product['input_max_limit'])}}Mbps/{{utils.bps2mbps(product['output_max_limit'])}}Mbps</td>
                 <td>
-                    % if product['product_policy'] in (0,2):
+                    % if product['product_policy'] in (0,1,2,3,4,5,6):
                     <a class="btn btn-sm btn-info" href="/product/order?product_id={{product['id']}}">订购</a>
                     % end
                 </td>

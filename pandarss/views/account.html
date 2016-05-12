@@ -75,7 +75,10 @@
                 <td>{{utils.sec2hour(user['time_length'])}} 小时</td>
                 <td>{{utils.kb2mb(user['flow_length'])}} M</td>
                 <td>
-                    <a href="/password?account_number={{user['account_number']}}">修改密码</a>
+                     % if get_product(user['product_id']).get('product_policy','') in (0,2):
+                     <a href="/account/renew?product_id={{user['product_id']}}">续费</a>
+                     % end
+                     |<a href="/password?account_number={{user['account_number']}}">修改密码</a>
                 </td>
             </tr>
             % end

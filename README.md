@@ -14,7 +14,7 @@ PandaRSS 是一个基于 ToughRADIUS V2版本 API 的自助服务系统。
 
 ### 安装
 
-    pip  install -U  https://github.com/PandaPark/PandaRSS/archive/master.zip
+    pip  install -U  https://github.com/lanyeit/PandaRSS/archive/master.zip
 
 ### 配置
 
